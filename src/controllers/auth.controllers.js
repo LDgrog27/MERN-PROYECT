@@ -1,6 +1,8 @@
 import User from '../models/user.models.js'; // importamos el modelo de usuario
 import bcrypt from 'bcryptjs'; // importamos bcryptjs para encriptar la contraseña
-import jws from 'jsonwebtoken'; // importamos jsonwebtoken para crear un token de usuario
+import {createAccesToken} from '../libs/jwt.js'
+
+
 
 export const register = async (req, res) => {
     const { email, password, username } = req.body
@@ -15,31 +17,22 @@ export const register = async (req, res) => {
             password: passwordHash // guardamos la contraseña encriptada
         });
 
-        const userSaved = await newUser.save() // save es un metodo de mongoose que nos permite guardar en la base de datos
-        // Es asincrono, por lo que debemos usar await
+        const userSaved = await newUser.save(); // save es un metodo de mongoose que nos permite guardar en la base de datos
+            // Es asincrono, por lo que debemos usar await
+        const token = await createAccesToken({ id: userSaved._id }); // usamos el metodo createAccesToken para crear un token de usuario
         
-        jwt.sing() // sing es un metodo de jsonwebtoken que nos permite crear un token de usuario
-
+        res.cookie( 'token', token); // Cookie es propio de express para una respuesta
         res.json({
-            id: userSaved._id,
-            username: userSaved.username,
-            email: userSaved.email,
-        })
-
+             id: userSaved._id,
+             username: userSaved.username,  // DATOS ENVIADOS AL FRONTEND
+             email: userSaved.email,
+        });
+       
     } catch (error) {
-        console.log(error)
+        res.status(500).json({ message: error.message });
     }
 
-
-
-
-
-
-
-
-
-
-}
+};
 
 
 export const login = (req, res) => { res.send('Login') }
