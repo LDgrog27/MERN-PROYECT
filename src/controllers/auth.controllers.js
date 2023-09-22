@@ -41,7 +41,7 @@ export const login = async (req, res) => {
 
         const userFound = await User.findOne({ email }); // Buscamos el usuario por el email
         if (!userFound) return res.status(400).json({ message: 'User not found' }); // Si no existe el usuario, retornamos un mensaje de error
-        
+
         const isMatch = await bcrypt.compare(password, userFound.password) // usamos bcrypt para comparar la contraseña ingresada //compare nos devuelve TRUE OR FALSE
 
         if (!isMatch) return res.status(400).json({ message: 'Incorrect password' }); // Si la contraseña es incorrecta, retornamos un mensaje de error
@@ -62,14 +62,24 @@ export const login = async (req, res) => {
 };
 
 export const logout = (req, res) => { // Cookie queda vacio y expira
-    res.cookie('token', '', { 
+    res.cookie('token', '', {
         expires: new Date(0) // Fecha de expiracion
-     }); 
-     return res.sendStatus(200)
+    });
+    return res.sendStatus(200)
 }
 
 export const profile = async (req, res) => {
+    const userFound = await User.findById(req.user.id)
+
+    if (!userFound) return res.status(400).json({ message: 'User not found' }); // Si no existe el usuario, retornamos un mensaje de error
+    
+    return res.json({
+        id: userFound._id,
+            username: userFound.username,  // DATOS ENVIADOS AL FRONTEND
+                email: userFound.email,
+   });
     res.send('Profile')
+
 }
 
 
